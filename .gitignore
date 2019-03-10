@@ -1,0 +1,4 @@
+stereo_depth_estimation/src/out_depth/
+stereo_depth_estimation/src/summary/
+stereo_depth_estimation/src/data/dataset/
+*.zip
