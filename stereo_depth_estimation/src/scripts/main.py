@@ -2,7 +2,7 @@
 
 import rospy
 from sensor_msgs.msg import Image
-#from network import estimate_depth
+from network import estimate_depth
 
 
 left_img = None
@@ -15,8 +15,8 @@ def run_network_if_both_images_are_present():
     global left_img_present, right_img_present
     if left_img_present and right_img_present:
         rospy.loginfo('Both side images are received, starting depth estimation...')
-        #depth = estimate_depth(left_img, right_img)
-        depth = 1 # to remove once tensorflow and network is set
+        depth = estimate_depth(left_img, right_img)
+        #depth = 1 # to remove once tensorflow and network is set
         rospy.loginfo('Depth estimation finished!')
         rospy.loginfo('Depth: {}'.format(depth))
 
