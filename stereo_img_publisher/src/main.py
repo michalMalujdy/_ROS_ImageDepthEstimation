@@ -17,17 +17,26 @@ class StereoImagePublisherNode:
     
     def setup_node(self):
         self.left_img_publisher = rospy.Publisher('stereo_depth_estimation/img/left', Image, queue_size = 1)
+        self.right_img_publisher = rospy.Publisher('stereo_depth_estimation/img/right', Image, queue_size = 1)
         rospy.init_node('stereo_img_publisher', anonymous = True)
         rospy.loginfo("Starting stereo_img_publisher.")
 
 
-    def publish_image(self):
+    def publish_left_img(self):
         cv_img = cv.imread(self.left_img_path)
         ros_img_message = self.cv_bridge.cv2_to_imgmsg(cv_img, 'bgr8')
         self.left_img_publisher.publish(ros_img_message)
-        rospy.loginfo('The image has been published')
+        rospy.loginfo('The left image has been published')
+
+
+    def publish_right_img(self):
+        cv_img = cv.imread(self.right_img_path)
+        ros_img_message = self.cv_bridge.cv2_to_imgmsg(cv_img, 'bgr8')
+        self.right_img_publisher.publish(ros_img_message)
+        rospy.loginfo('The right image has been published')
 
 
 if __name__ == "__main__":
     ros_node = StereoImagePublisherNode()
-    ros_node.publish_image()
+    ros_node.publish_left_img()
+    ros_node.publish_right_img()
