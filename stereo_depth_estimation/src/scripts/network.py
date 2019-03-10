@@ -58,8 +58,9 @@ def estimate_depth(left_img, right_img):
     # paths
     #datasetPath = "/media/jachu/JanW/KITTI_2015_stereo/data_scene_flow/testing"
     #calibPath = "/media/jachu/JanW/KITTI_2015_stereo/data_scene_flow_calib/testing/calib_cam_to_cam/000000.txt"
-    datasetPath = "./../data/dataset"
-    calibPath = "./../data/000000.txt"
+    data_dir = '/media/dexter/Xubuntu/catkin_ws/src/stereo_depth_estimation/src/data'
+    datasetPath = '{}/{}'.format(data_dir, 'dataset')
+    calibPath = '{}/{}'.format(data_dir, '000000.txt')
 
     # calibration parameters
     calibData = load_cam_to_cam(calibPath)
@@ -76,7 +77,7 @@ def estimate_depth(left_img, right_img):
 
     # path to .meta
     # loader = tf.train.import_meta_graph('data/model-inference-1025x321-0.meta')
-    loader = tf.train.import_meta_graph('./../data/model-inference-513x257-0.meta')
+    loader = tf.train.import_meta_graph('{}/{}'.format(data_dir, 'model-inference-513x257-0.meta'))
 
     # filename as input
     input_img_1 = tf.get_default_graph().get_tensor_by_name("Dataloader/StringJoin:0")
@@ -86,7 +87,7 @@ def estimate_depth(left_img, right_img):
     config = tf.ConfigProto(allow_soft_placement=True, inter_op_parallelism_threads=2, intra_op_parallelism_threads=1)
     with tf.Session(config=config) as sess:
         # restore model parameters
-        loader.restore(sess, './../data/model-inference-513x257-0')
+        loader.restore(sess, '{}/{}'.format(data_dir, 'model-inference-513x257-0'))
 
         # for graph inspection in tensorboard
         train_writer = tf.summary.FileWriter('summary', sess.graph)
