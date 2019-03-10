@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow as tf
-import cv2 as cv
 import os
 
 
@@ -53,88 +52,89 @@ def load_cam_to_cam(filepath):
 
     return data
 
+def estimate_depth(left_img, right_img):
+    depthLim = 65535
 
-depthLim = 65535
+    # paths
+    #datasetPath = "/media/jachu/JanW/KITTI_2015_stereo/data_scene_flow/testing"
+    #calibPath = "/media/jachu/JanW/KITTI_2015_stereo/data_scene_flow_calib/testing/calib_cam_to_cam/000000.txt"
+    datasetPath = "./../data/dataset"
+    calibPath = "./../data/000000.txt"
 
-# paths
-#datasetPath = "/media/jachu/JanW/KITTI_2015_stereo/data_scene_flow/testing"
-#calibPath = "/media/jachu/JanW/KITTI_2015_stereo/data_scene_flow_calib/testing/calib_cam_to_cam/000000.txt"
-datasetPath = "./data/dataset"
-calibPath = "./data/000000.txt"
+    # calibration parameters
+    calibData = load_cam_to_cam(calibPath)
 
-# calibration parameters
-calibData = load_cam_to_cam(calibPath)
+    print('K_cam2', calibData['K_cam2'])
+    print('K_cam3', calibData['K_cam3'])
+    print('baseline', calibData['baseline'])
+    print('imWidth', calibData['imWidth'])
+    print('imHeight', calibData['imHeight'])
 
-print('K_cam2', calibData['K_cam2'])
-print('K_cam3', calibData['K_cam3'])
-print('baseline', calibData['baseline'])
-print('imWidth', calibData['imWidth'])
-print('imHeight', calibData['imHeight'])
+    imWidth = calibData['imWidth']
+    fx = calibData['K_cam2'][0, 0]
+    baseline = calibData['baseline']
 
-imWidth = calibData['imWidth']
-fx = calibData['K_cam2'][0, 0]
-baseline = calibData['baseline']
+    # path to .meta
+    # loader = tf.train.import_meta_graph('data/model-inference-1025x321-0.meta')
+    loader = tf.train.import_meta_graph('./../data/model-inference-513x257-0.meta')
 
-# path to .meta
-# loader = tf.train.import_meta_graph('data/model-inference-1025x321-0.meta')
-loader = tf.train.import_meta_graph('data/model-inference-513x257-0.meta')
+    # filename as input
+    input_img_1 = tf.get_default_graph().get_tensor_by_name("Dataloader/StringJoin:0")
+    input_img_2 = tf.get_default_graph().get_tensor_by_name("Dataloader/StringJoin_1:0")
+    disp_left = tf.get_default_graph().get_tensor_by_name("disparities/ExpandDims:0")
 
-# filename as input
-input_img_1 = tf.get_default_graph().get_tensor_by_name("Dataloader/StringJoin:0")
-input_img_2 = tf.get_default_graph().get_tensor_by_name("Dataloader/StringJoin_1:0")
-disp_left = tf.get_default_graph().get_tensor_by_name("disparities/ExpandDims:0")
+    config = tf.ConfigProto(allow_soft_placement=True, inter_op_parallelism_threads=2, intra_op_parallelism_threads=1)
+    with tf.Session(config=config) as sess:
+        # restore model parameters
+        loader.restore(sess, './../data/model-inference-513x257-0')
 
-config = tf.ConfigProto(allow_soft_placement=True, inter_op_parallelism_threads=2, intra_op_parallelism_threads=1)
-with tf.Session(config=config) as sess:
-    # restore model parameters
-    loader.restore(sess, 'data/model-inference-513x257-0')
-
-    # for graph inspection in tensorboard
-    train_writer = tf.summary.FileWriter('summary', sess.graph)
-    # train_writer.flush()
-
-    # print out all variablesS
-    # names = [n.name for n in tf.get_default_graph().as_graph_def().node]
-    #for name in names:
-    #    print(name)
-
-    leftImFileList = sorted(os.listdir(datasetPath + "/image_2"))
-    rightImFileList = sorted(os.listdir(datasetPath + "/image_3"))
-
-    for i, entry in enumerate(leftImFileList):
-        print('leftIm: ', leftImFileList[i])
-        print('rightIm: ', rightImFileList[i])
-
-        # run
-        run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
-        run_metadata = tf.RunMetadata()
-        merged = tf.summary.merge_all()
-        summary, disp = sess.run([merged, disp_left],
-                                 feed_dict={input_img_1: datasetPath + "/image_2/" + leftImFileList[i],
-                                            input_img_2: datasetPath + "/image_3/" + rightImFileList[i]},
-                                 options=run_options,
-                                 run_metadata=run_metadata)
-        train_writer.add_run_metadata(run_metadata, 'run%d' % i, i)
-        train_writer.add_summary(summary, i)
+        # for graph inspection in tensorboard
+        train_writer = tf.summary.FileWriter('summary', sess.graph)
         # train_writer.flush()
 
-        print('output', disp.shape)
+        # print out all variablesS
+        # names = [n.name for n in tf.get_default_graph().as_graph_def().node]
+        #for name in names:
+        #    print(name)
 
-        # select a slice from first dimension
-        disp = disp[0]
+        leftImFileList = sorted(os.listdir(datasetPath + "/image_2"))
+        rightImFileList = sorted(os.listdir(datasetPath + "/image_3"))
 
-        print('min disp = ', np.min(disp))
-        print('max disp = ', np.max(disp))
+        for i, entry in enumerate(leftImFileList):
+            print('leftIm: ', leftImFileList[i])
+            print('rightIm: ', rightImFileList[i])
 
-        # depth in [mm]
-        depth = np.uint16(1000 * baseline * fx / (disp * imWidth))
-        dispLim = 1000 * baseline * fx / (depthLim * imWidth)
-        print('dispLim ', dispLim)
-        depth[disp < dispLim] = 0
+            # run
+            run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+            run_metadata = tf.RunMetadata()
+            merged = tf.summary.merge_all()
+            summary, disp = sess.run([merged, disp_left],
+                                    feed_dict={ input: [ left_img, right_img ] },
+                                    options=run_options,
+                                    run_metadata=run_metadata)
+            train_writer.add_run_metadata(run_metadata, 'run%d' % i, i)
+            train_writer.add_summary(summary, i)
+            # train_writer.flush()
 
-        # save depth image
-        cv.imwrite('out_depth/depth_' + leftImFileList[i], depth)
+            print('output', disp.shape)
 
-        # display image
-        cv.imshow("out", depth)
-        cv.waitKey(-1)
+            # select a slice from first dimension
+            disp = disp[0]
+
+            print('min disp = ', np.min(disp))
+            print('max disp = ', np.max(disp))
+
+            # depth in [mm]
+            depth = np.uint16(1000 * baseline * fx / (disp * imWidth))
+            dispLim = 1000 * baseline * fx / (depthLim * imWidth)
+            print('dispLim ', dispLim)
+            depth[disp < dispLim] = 0
+
+            # save depth image
+            """ cv.imwrite('out_depth/depth_' + leftImFileList[i], depth)
+
+            # display image
+            cv.imshow("out", depth)
+            cv.waitKey(-1) """
+
+            return depth
