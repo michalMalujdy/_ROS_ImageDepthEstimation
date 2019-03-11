@@ -80,8 +80,8 @@ def estimate_depth(left_img, right_img):
     loader = tf.train.import_meta_graph('{}/{}'.format(data_dir, 'model-inference-513x257-0.meta'))
 
     # filename as input
-    input_img_1 = tf.get_default_graph().get_tensor_by_name("Dataloader/StringJoin:0")
-    input_img_2 = tf.get_default_graph().get_tensor_by_name("Dataloader/StringJoin_1:0")
+    input_img_1 = tf.get_default_graph().get_tensor_by_name('Dataloader/read_image/read_png_image/DecodePng:0')
+    input_img_2 = tf.get_default_graph().get_tensor_by_name('Dataloader/read_image_1/read_png_image/DecodePng:0')
     disp_left = tf.get_default_graph().get_tensor_by_name("disparities/ExpandDims:0")
 
     config = tf.ConfigProto(allow_soft_placement=True, inter_op_parallelism_threads=2, intra_op_parallelism_threads=1)
@@ -110,9 +110,11 @@ def estimate_depth(left_img, right_img):
             run_metadata = tf.RunMetadata()
             merged = tf.summary.merge_all()
             summary, disp = sess.run([merged, disp_left],
-                                    feed_dict={ input: [ left_img, right_img ] },
-                                    options=run_options,
-                                    run_metadata=run_metadata)
+                                    feed_dict = {
+                                        input_img_1: left_img,
+                                        input_img_2: rlight_img},
+                                    options = run_options,
+                                    run_metadata = run_metadata)
             train_writer.add_run_metadata(run_metadata, 'run%d' % i, i)
             train_writer.add_summary(summary, i)
             # train_writer.flush()
