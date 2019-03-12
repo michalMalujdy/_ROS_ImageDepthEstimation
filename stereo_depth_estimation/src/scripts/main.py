@@ -2,7 +2,7 @@
 
 import rospy
 from sensor_msgs.msg import Image
-from network import estimate_depth
+from network import ImageDepthNeuralNetwork
 from cv_bridge import CvBridge
 import cv2 as cv
 
@@ -11,6 +11,8 @@ class StereoDepthEstimationNode:
     def __init__(self):
         rospy.init_node("stereo_depth_estimation", anonymous = True)
         rospy.loginfo("Starting stereo_depth_estimation")
+
+        self.depth_network = ImageDepthNeuralNetwork()
 
         rospy.Subscriber("stereo_depth_estimation/img/left", Image, self.left_img_subscriber)
         rospy.Subscriber("stereo_depth_estimation/img/right", Image, self.right_img_subscriber)
@@ -22,6 +24,8 @@ class StereoDepthEstimationNode:
         self.right_img = None
         
         self.cv_bridge = CvBridge()
+
+        rospy.loginfo("The node is ready")
 
 
     def left_img_subscriber(self, img):
@@ -57,7 +61,7 @@ class StereoDepthEstimationNode:
             cv_image_left, cv_image_right = self.convert_images_to_cv2()
 
             rospy.loginfo('Both side images are received, starting depth estimation...')
-            depth = estimate_depth(cv_image_left, cv_image_right)
+            depth = self.depth_network.estimate_depth(cv_image_left, cv_image_right)
             rospy.loginfo('Depth estimation finished!')
 
             self.left_img_present = False
