@@ -17,6 +17,30 @@ class ImageDepthNeuralNetwork():
         self.fx = self.calibData['K_cam2'][0, 0]
         self.baseline = self.calibData['baseline']
 
+    
+    def initialize_tf_network(self):
+
+        # path to .meta
+        self.loader = tf.train.import_meta_graph('{}/{}'.format(self.data_dir, self.model_meta_graph_filename))
+
+        # numpy arrays as inputs
+        self.input_img_1 = tf.get_default_graph().get_tensor_by_name('Dataloader/read_image/read_png_image/DecodePng:0')
+        self.input_img_2 = tf.get_default_graph().get_tensor_by_name('Dataloader/read_image_1/read_png_image/DecodePng:0')
+        self.disp_left = tf.get_default_graph().get_tensor_by_name("disparities/ExpandDims:0")
+
+        self.config = tf.ConfigProto(
+            allow_soft_placement = True, 
+            inter_op_parallelism_threads = 2, 
+            intra_op_parallelism_threads = 1)
+
+        self.tf_session = tf.Session(config = self.config)
+        # restore model parameters
+        self.loader.restore(self.tf_session, '{}/{}'.format(self.data_dir, 'model-inference-513x257-0'))
+
+        # for graph inspection in tensorboard
+        self.train_writer = tf.summary.FileWriter('summary', self.tf_session.graph)
+
+
 
     def read_calib_file(self, filepath):
         """Read in a calibration file and parse into a dictionary."""
@@ -70,43 +94,25 @@ class ImageDepthNeuralNetwork():
 
     def estimate_depth(self, left_img, right_img):
 
-        # path to .meta
-        self.loader = tf.train.import_meta_graph('{}/{}'.format(self.data_dir, self.model_meta_graph_filename))
+        self.initialize_tf_network()
+        
+        # run
+        run_options = tf.RunOptions(trace_level = tf.RunOptions.FULL_TRACE)
+        run_metadata = tf.RunMetadata()
+        merged = tf.summary.merge_all()
+        summary, disp = self.tf_session.run([merged, self.disp_left],
+                                feed_dict = {
+                                    self.input_img_1: left_img,
+                                    self.input_img_2: right_img},
+                                options = run_options,
+                                run_metadata = run_metadata)
 
-        # numpy arrays as inputs
-        self.input_img_1 = tf.get_default_graph().get_tensor_by_name('Dataloader/read_image/read_png_image/DecodePng:0')
-        self.input_img_2 = tf.get_default_graph().get_tensor_by_name('Dataloader/read_image_1/read_png_image/DecodePng:0')
-        self.disp_left = tf.get_default_graph().get_tensor_by_name("disparities/ExpandDims:0")
+        # select a slice from first dimension
+        disp = disp[0]
 
-        self.config = tf.ConfigProto(
-            allow_soft_placement = True, 
-            inter_op_parallelism_threads = 2, 
-            intra_op_parallelism_threads = 1)
+        # depth in [mm]
+        depth = np.uint16(1000 * self.baseline * self.fx / (disp * self.imWidth))
+        dispLim = 1000 * self.baseline * self.fx / (self.depthLim * self.imWidth)
+        depth[disp < dispLim] = 0
 
-        with tf.Session(config = self.config) as sess:
-            # restore model parameters
-            self.loader.restore(sess, '{}/{}'.format(self.data_dir, 'model-inference-513x257-0'))
-
-            # for graph inspection in tensorboard
-            train_writer = tf.summary.FileWriter('summary', sess.graph)
-
-            # run
-            run_options = tf.RunOptions(trace_level = tf.RunOptions.FULL_TRACE)
-            run_metadata = tf.RunMetadata()
-            merged = tf.summary.merge_all()
-            summary, disp = sess.run([merged, self.disp_left],
-                                    feed_dict = {
-                                        self.input_img_1: left_img,
-                                        self.input_img_2: right_img},
-                                    options = run_options,
-                                    run_metadata = run_metadata)
-
-            # select a slice from first dimension
-            disp = disp[0]
-
-            # depth in [mm]
-            depth = np.uint16(1000 * self.baseline * self.fx / (disp * self.imWidth))
-            dispLim = 1000 * self.baseline * self.fx / (self.depthLim * self.imWidth)
-            depth[disp < dispLim] = 0
-
-            return depth
+        return depth
