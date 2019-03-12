@@ -17,16 +17,20 @@ class ImageDepthNeuralNetwork():
         self.fx = self.calibData['K_cam2'][0, 0]
         self.baseline = self.calibData['baseline']
 
+        self.initialize_tf_network()
+
     
     def initialize_tf_network(self):
 
         # path to .meta
         self.loader = tf.train.import_meta_graph('{}/{}'.format(self.data_dir, self.model_meta_graph_filename))
 
+        self.graph = tf.get_default_graph()
+
         # numpy arrays as inputs
-        self.input_img_1 = tf.get_default_graph().get_tensor_by_name('Dataloader/read_image/read_png_image/DecodePng:0')
-        self.input_img_2 = tf.get_default_graph().get_tensor_by_name('Dataloader/read_image_1/read_png_image/DecodePng:0')
-        self.disp_left = tf.get_default_graph().get_tensor_by_name("disparities/ExpandDims:0")
+        self.input_img_1 = self.graph.get_tensor_by_name('Dataloader/read_image/read_png_image/DecodePng:0')
+        self.input_img_2 = self.graph.get_tensor_by_name('Dataloader/read_image_1/read_png_image/DecodePng:0')
+        self.disp_left = self.graph.get_tensor_by_name("disparities/ExpandDims:0")
 
         self.config = tf.ConfigProto(
             allow_soft_placement = True, 
@@ -34,12 +38,10 @@ class ImageDepthNeuralNetwork():
             intra_op_parallelism_threads = 1)
 
         self.tf_session = tf.Session(config = self.config)
+        
         # restore model parameters
         self.loader.restore(self.tf_session, '{}/{}'.format(self.data_dir, 'model-inference-513x257-0'))
-
-        # for graph inspection in tensorboard
-        self.train_writer = tf.summary.FileWriter('summary', self.tf_session.graph)
-
+        self.merged = tf.summary.merge_all()
 
 
     def read_calib_file(self, filepath):
@@ -93,14 +95,11 @@ class ImageDepthNeuralNetwork():
 
 
     def estimate_depth(self, left_img, right_img):
-
-        self.initialize_tf_network()
         
         # run
         run_options = tf.RunOptions(trace_level = tf.RunOptions.FULL_TRACE)
         run_metadata = tf.RunMetadata()
-        merged = tf.summary.merge_all()
-        summary, disp = self.tf_session.run([merged, self.disp_left],
+        summary, disp = self.tf_session.run([self.merged, self.disp_left],
                                 feed_dict = {
                                     self.input_img_1: left_img,
                                     self.input_img_2: right_img},
