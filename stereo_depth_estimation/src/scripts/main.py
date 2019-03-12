@@ -4,6 +4,7 @@ import rospy
 from sensor_msgs.msg import Image
 from network import estimate_depth
 from cv_bridge import CvBridge
+import cv2 as cv
 
 
 left_img = None
@@ -28,12 +29,13 @@ def run_network_if_both_images_are_present():
 
         rospy.loginfo('Both side images are received, starting depth estimation...')
         depth = estimate_depth(cv_image_left, cv_image_right)
-        #depth = 1 # to remove once tensorflow and network is set
         rospy.loginfo('Depth estimation finished!')
-        rospy.loginfo('Depth: {}'.format(depth))
 
         left_img_present = False
         right_img_present = False
+
+        cv.imshow("out", depth)
+        cv.waitKey(-1)
 
 
 def left_img_subscriber(img):

@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import os
+import cv2 as cv
 
 
 def read_calib_file(filepath):
@@ -54,6 +55,11 @@ def load_cam_to_cam(filepath):
 
 def estimate_depth(left_img, right_img):
     depthLim = 65535
+
+    # Display received images
+    # cv.imshow("left", left_img)
+    # cv.imshow("right", right_img)
+    # cv.waitKey(-1)
 
     # paths
     #datasetPath = "/media/jachu/JanW/KITTI_2015_stereo/data_scene_flow/testing"
@@ -112,7 +118,7 @@ def estimate_depth(left_img, right_img):
             summary, disp = sess.run([merged, disp_left],
                                     feed_dict = {
                                         input_img_1: left_img,
-                                        input_img_2: rlight_img},
+                                        input_img_2: right_img},
                                     options = run_options,
                                     run_metadata = run_metadata)
             train_writer.add_run_metadata(run_metadata, 'run%d' % i, i)
@@ -134,10 +140,10 @@ def estimate_depth(left_img, right_img):
             depth[disp < dispLim] = 0
 
             # save depth image
-            """ cv.imwrite('out_depth/depth_' + leftImFileList[i], depth)
+            """ cv.imwrite('out_depth/depth_' + leftImFileList[i], depth)"""
 
             # display image
-            cv.imshow("out", depth)
-            cv.waitKey(-1) """
+            # cv.imshow("out", depth)
+            # cv.waitKey(-1)
 
             return depth
