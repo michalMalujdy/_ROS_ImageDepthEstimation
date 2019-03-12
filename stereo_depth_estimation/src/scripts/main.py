@@ -6,6 +6,7 @@ from network import estimate_depth
 from cv_bridge import CvBridge
 import cv2 as cv
 
+
 class StereoDepthEstimationNode:
     def __init__(self):
         rospy.init_node("stereo_depth_estimation", anonymous = True)
@@ -33,7 +34,6 @@ class StereoDepthEstimationNode:
 
             if(self.both_images_present):
                 self.run_network()
-
 
 
     def right_img_subscriber(self, img):
@@ -72,7 +72,6 @@ class StereoDepthEstimationNode:
         cv_image_right = self.cv_bridge.imgmsg_to_cv2(self.right_img, "bgr8")
 
         return cv_image_left, cv_image_right
-
 
 
 if __name__ == "__main__":
