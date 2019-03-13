@@ -6,9 +6,11 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2 as cv
 from std_msgs.msg import String
+import sys
 
 class StereoImagePublisherNode:
-    def __init__(self):
+    def __init__(self, set_name):
+        self.set_name = set_name
         self.cv_bridge = CvBridge()
 
         self.resolve_images_path()
@@ -19,8 +21,8 @@ class StereoImagePublisherNode:
     def resolve_images_path(self):
         rospack = rospkg.RosPack()
         root_dir = rospack.get_path('stereo_img_publisher')
-        self.left_img_path = '{}/img/left/000199_10.png'.format(root_dir)
-        self.right_img_path = '{}/img/right/000199_10.png'.format(root_dir)
+        self.left_img_path = '{}/img/left/{}.png'.format(root_dir, self.set_name)
+        self.right_img_path = '{}/img/right/{}.png'.format(root_dir, self.set_name)
 
 
     def setup_node(self):
@@ -44,7 +46,19 @@ class StereoImagePublisherNode:
         rospy.loginfo('The right image has been published')
 
 
+def getSetNameFromArgs():
+    set_name = '1'
+
+    if(len(sys.argv) > 1 and '-set2' in sys.argv):
+        set_name = '2'
+
+    
+    if(len(sys.argv) > 1 and '-set3' in sys.argv):
+        set_name = '3'
+
+    return set_name
+
 if __name__ == "__main__":
-    ros_node = StereoImagePublisherNode()
+    ros_node = StereoImagePublisherNode(getSetNameFromArgs())
     ros_node.publish_left_img()
     ros_node.publish_right_img()
