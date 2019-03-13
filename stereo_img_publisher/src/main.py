@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import rospkg
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 import cv2 as cv
@@ -8,13 +9,20 @@ from std_msgs.msg import String
 
 class StereoImagePublisherNode:
     def __init__(self):
+        self.rospack = rospkg.RosPack()
         self.cv_bridge = CvBridge()
-        self.left_img_path = '/media/dexter/Xubuntu/catkin_ws/src/stereo_img_publisher/img/left/000199_10.png'
-        self.right_img_path = '/media/dexter/Xubuntu/catkin_ws/src/stereo_img_publisher/img/right/000199_10.png'
+
+        self.resolve_images_path()
         
         self.setup_node()
 
     
+    def resolve_images_path(self):
+        root_dir = self.rospack.get_path('stereo_img_publisher')
+        self.left_img_path = '{}/img/left/000199_10.png'.format(root_dir)
+        self.right_img_path = '{}/img/right/000199_10.png'.format(root_dir)
+
+
     def setup_node(self):
         self.left_img_publisher = rospy.Publisher('stereo_depth_estimation/img/left', Image, queue_size = 1)
         self.right_img_publisher = rospy.Publisher('stereo_depth_estimation/img/right', Image, queue_size = 1)
