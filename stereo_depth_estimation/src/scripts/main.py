@@ -6,10 +6,11 @@ from sensor_msgs.msg import Image
 from network import ImageDepthNeuralNetwork
 from cv_bridge import CvBridge
 import cv2 as cv
+import sys
 
 
 class StereoDepthEstimationNode:
-    def __init__(self):
+    def __init__(self, showResultDepthImage = False):
         rospy.init_node("stereo_depth_estimation", anonymous = True)
         rospy.loginfo("Starting stereo_depth_estimation")
 
@@ -26,6 +27,7 @@ class StereoDepthEstimationNode:
         self.right_img = None
         
         self.cv_bridge = CvBridge()
+        self.showResultDepthImage = showResultDepthImage
 
         rospy.loginfo("The node is ready")
 
@@ -75,8 +77,9 @@ class StereoDepthEstimationNode:
             self.left_img_present = False
             self.right_img_present = False
 
-            cv.imshow("out", depth)
-            cv.waitKey(-1)
+            if(self.showResultDepthImage):
+                cv.imshow("out", depth)
+                cv.waitKey(-1)
 
 
     def convert_images_to_cv2(self):
@@ -87,5 +90,10 @@ class StereoDepthEstimationNode:
 
 
 if __name__ == "__main__":
-    stereo_depth_estimation = StereoDepthEstimationNode()
+    showResultDepthImage = False
+    if(len(sys.argv) > 1):
+        showResultDepthImage = sys.argv[1] == '-show'
+
+    stereo_depth_estimation = StereoDepthEstimationNode(showResultDepthImage)
+
     rospy.spin()
