@@ -20,6 +20,8 @@ class StereoDepthEstimationNode:
         rospy.Subscriber("stereo_depth_estimation/img/left", Image, self.left_img_subscriber)
         rospy.Subscriber("stereo_depth_estimation/img/right", Image, self.right_img_subscriber)
 
+        self.result_publisher = rospy.Publisher('stereo_depth_estimation/depth/raw', Image, queue_size = 5)
+
         self.left_img_present = False
         self.right_img_present = False
 
@@ -73,6 +75,9 @@ class StereoDepthEstimationNode:
             rospy.loginfo('Both side images are received, starting depth estimation...')
             depth = self.depth_network.estimate_depth(cv_image_left, cv_image_right)
             rospy.loginfo('Depth estimation finished!')
+
+            ros_img_message = self.cv_bridge.cv2_to_imgmsg(depth, '16UC1')
+            self.result_publisher.publish(ros_img_message)
 
             self.left_img_present = False
             self.right_img_present = False
