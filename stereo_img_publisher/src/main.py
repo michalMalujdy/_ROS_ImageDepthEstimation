@@ -9,7 +9,6 @@ from std_msgs.msg import String
 
 class StereoImagePublisherNode:
     def __init__(self):
-        self.rospack = rospkg.RosPack()
         self.cv_bridge = CvBridge()
 
         self.resolve_images_path()
@@ -18,7 +17,8 @@ class StereoImagePublisherNode:
 
     
     def resolve_images_path(self):
-        root_dir = self.rospack.get_path('stereo_img_publisher')
+        rospack = rospkg.RosPack()
+        root_dir = rospack.get_path('stereo_img_publisher')
         self.left_img_path = '{}/img/left/000199_10.png'.format(root_dir)
         self.right_img_path = '{}/img/right/000199_10.png'.format(root_dir)
 
