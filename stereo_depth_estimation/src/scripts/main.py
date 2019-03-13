@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import rospy
+import rospkg
 from sensor_msgs.msg import Image
 from network import ImageDepthNeuralNetwork
 from cv_bridge import CvBridge
@@ -12,7 +13,8 @@ class StereoDepthEstimationNode:
         rospy.init_node("stereo_depth_estimation", anonymous = True)
         rospy.loginfo("Starting stereo_depth_estimation")
 
-        self.depth_network = ImageDepthNeuralNetwork()
+        network_data_dir = self.resolve_network_data_dir()
+        self.depth_network = ImageDepthNeuralNetwork(network_data_dir)
 
         rospy.Subscriber("stereo_depth_estimation/img/left", Image, self.left_img_subscriber)
         rospy.Subscriber("stereo_depth_estimation/img/right", Image, self.right_img_subscriber)
@@ -26,6 +28,12 @@ class StereoDepthEstimationNode:
         self.cv_bridge = CvBridge()
 
         rospy.loginfo("The node is ready")
+
+
+    def resolve_network_data_dir(self):
+        rospack = rospkg.RosPack()
+        root_dir = rospack.get_path('stereo_depth_estimation')
+        return '{}/src/data'.format(root_dir)
 
 
     def left_img_subscriber(self, img):

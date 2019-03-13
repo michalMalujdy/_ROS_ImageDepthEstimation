@@ -3,11 +3,10 @@ import tensorflow as tf
 import os
 
 class ImageDepthNeuralNetwork():
-    def __init__(self):
+    def __init__(self, data_dir = './src/data'):
         self.depthLim = 65535
 
-        self.data_dir = '/media/dexter/Xubuntu/catkin_ws/src/stereo_depth_estimation/src/data'
-        self.datasetPath = '{}/{}'.format(self.data_dir, 'dataset')
+        self.data_dir = data_dir
         self.model_meta_graph_filename = 'model-inference-513x257-0.meta'
         
         self.calibPath = '{}/{}'.format(self.data_dir, '000000.txt')
