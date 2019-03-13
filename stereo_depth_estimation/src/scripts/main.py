@@ -90,9 +90,7 @@ class StereoDepthEstimationNode:
 
 
 if __name__ == "__main__":
-    showResultDepthImage = False
-    if(len(sys.argv) > 1):
-        showResultDepthImage = sys.argv[1] == '-show'
+    showResultDepthImage = len(sys.argv) > 1 and '-show' in sys.argv
 
     stereo_depth_estimation = StereoDepthEstimationNode(showResultDepthImage)
 
