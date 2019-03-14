@@ -89,7 +89,11 @@ class StereoDepthEstimationNode:
 
     def convert_images_to_cv2(self):
         cv_image_left = self.cv_bridge.imgmsg_to_cv2(self.left_img, "bgr8")
+        cv_image_left = cv.cvtColor(cv_image_left, cv.COLOR_GRAY2BGR)
+
         cv_image_right = self.cv_bridge.imgmsg_to_cv2(self.right_img, "bgr8")
+        cv_image_right = cv.cvtColor(cv_image_right, cv.COLOR_GRAY2BGR)
+
 
         return cv_image_left, cv_image_right
 
