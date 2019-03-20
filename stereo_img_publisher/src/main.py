@@ -26,8 +26,8 @@ class StereoImagePublisherNode:
 
 
     def setup_node(self):
-        self.left_img_publisher = rospy.Publisher('stereo_depth_estimation/img/left', Image, queue_size = 1)
-        self.right_img_publisher = rospy.Publisher('stereo_depth_estimation/img/right', Image, queue_size = 1)
+        self.left_img_publisher = rospy.Publisher('stereo_depth_estimation/img/left', Image, queue_size = 2)
+        self.right_img_publisher = rospy.Publisher('stereo_depth_estimation/img/right', Image, queue_size = 2)
         rospy.init_node('stereo_img_publisher', anonymous = True)
         rospy.loginfo("Starting stereo_img_publisher.")
 
@@ -49,12 +49,8 @@ class StereoImagePublisherNode:
 def getSetNameFromArgs():
     set_name = '1'
 
-    if(len(sys.argv) > 1 and '-set2' in sys.argv):
-        set_name = '2'
-
-    
-    if(len(sys.argv) > 1 and '-set3' in sys.argv):
-        set_name = '3'
+    if(len(sys.argv) > 1):
+        set_name = sys.argv[1]
 
     return set_name
 
