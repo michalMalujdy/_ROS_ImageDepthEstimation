@@ -17,8 +17,8 @@ class StereoDepthEstimationNode:
         network_data_dir = self.resolve_network_data_dir()
         self.depth_network = ImageDepthNeuralNetwork(network_data_dir)
 
-        rospy.Subscriber("stereo_depth_estimation/img/left", Image, self.left_img_subscriber)
-        rospy.Subscriber("stereo_depth_estimation/img/right", Image, self.right_img_subscriber)
+        rospy.Subscriber("stereo/left/image_raw", Image, self.left_img_subscriber)
+        rospy.Subscriber("stereo/right/image_raw", Image, self.right_img_subscriber)
 
         self.result_publisher = rospy.Publisher('stereo_depth_estimation/depth/raw', Image, queue_size = 5)
 
@@ -41,9 +41,8 @@ class StereoDepthEstimationNode:
 
 
     def left_img_subscriber(self, img):
-        rospy.loginfo('Received left image')
-
         if self.left_img_present == False:
+            rospy.loginfo('Received left image')
 
             self.left_img = img
             self.left_img_present = True
@@ -53,9 +52,8 @@ class StereoDepthEstimationNode:
 
 
     def right_img_subscriber(self, img):
-        rospy.loginfo('Received right image')
-
         if self.right_img_present == False:
+            rospy.loginfo('Received right image')
 
             self.right_img = img
             self.right_img_present = True
@@ -89,11 +87,10 @@ class StereoDepthEstimationNode:
 
     def convert_images_to_cv2(self):
         cv_image_left = self.cv_bridge.imgmsg_to_cv2(self.left_img, "bgr8")
-        cv_image_left = cv.cvtColor(cv_image_left, cv.COLOR_GRAY2BGR)
+        #cv_image_left = cv.cvtColor(cv_image_left, cv.COLOR_GRAY2BGR)
 
         cv_image_right = self.cv_bridge.imgmsg_to_cv2(self.right_img, "bgr8")
-        cv_image_right = cv.cvtColor(cv_image_right, cv.COLOR_GRAY2BGR)
-
+        #cv_image_right = cv.cvtColor(cv_image_right, cv.COLOR_GRAY2BGR)
 
         return cv_image_left, cv_image_right
 
