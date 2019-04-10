@@ -32,7 +32,7 @@ class StereoImgSaverNode:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser('xD')
+    parser = argparse.ArgumentParser('parser')
     parser.add_argument('-p', '--prefix')
     args = parser.parse_args()
 

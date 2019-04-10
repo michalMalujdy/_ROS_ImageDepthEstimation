@@ -5,7 +5,8 @@
 In the reposotory there are two ROS packages:
 
 - <b>stereo_depth_estimation</b> - ROS package that estimates depth being given a pair of stereo images using a neural network and publishes the result (estimated depth) as an image.
-- <b>stereo_img_publisher</b> - publishes stereo images on desired topic to run a stereo_depth_estimation node.
+- <b>stereo_img_publisher</b> - publishes stereo images on desired topic to run a stereo_depth_estimation node. Optional, used for debugging and demo purpouses.
+- <b>stereo_img_saver</b> - saves output images of the network. Optional, used for debugging and demo purpouses.
 
 ## Quick depth estimation demo
 <b>IMPORTANT NOTE</b> - remember to source the setup.bash file for given catkin workspace each time you open a new terminal!
