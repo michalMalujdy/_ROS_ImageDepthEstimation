@@ -4,9 +4,11 @@
 
 In the reposotory there are two ROS packages:
 
-- <b>stereo_depth_estimation</b> - ROS package that estimates depth being given a pair of stereo images using a neural network and publishes the result (estimated depth) as an image.
-- <b>stereo_img_publisher</b> - publishes stereo images on desired topic to run a stereo_depth_estimation node. Optional, used for debugging and demo purpouses.
-- <b>stereo_img_saver</b> - saves output images of the network. Optional, used for debugging and demo purpouses.
+- <b>stereo_depth_estimation</b> - ROS package that estimates depth being given a pair of stereo images using a neural network and publishes the result (estimated depth) as an image. All the main functionalities are packed in here.
+- <b>stereo_img_publisher</b> - publishes stereo images on desired topic to run a stereo_depth_estimation node. Optional, used for debugging and demo purposes.
+- <b>stereo_img_saver</b> - saves output images of the network. Optional, used for debugging and demo purposes.
+
+In order the network to work better, input pair of images should be rectified (e.g. with stereo_image_proc). Furthemore, coloured (RGB8) and the cameras ought be calibrated (e.g. with kalibr).
 
 ## Quick depth estimation demo
 <b>IMPORTANT NOTE</b> - remember to source the setup.bash file for given catkin workspace each time you open a new terminal!
@@ -18,15 +20,27 @@ In the reposotory there are two ROS packages:
 - In another terminal run ```rosrun stereo_depth_estimation main.py -show``` to start the neural network to estimate the depth
 - In another terminal run ```rosrun stereo_img_publisher main.py``` to publish a pair of stereo images that the stereo_depth_estimation node subscribes to
 
+## Usage of the stereo_depth_estimation package
+It is recommended to use ```stereo_depth_estimation/main.launch``` in order to run the package. Configurable parameters are placed there:
+- ```input_img_left``` - the left input image topic that the node will subscribe to. Please set the value with respect to your camera left image output topic.
+- ```input_img_right``` - the right input image topic that the node will subscribe to. Please set the value with respect to your camera right image output topic.
+- ```img_out``` - the output depth image topic that the node will publish to. 
+
+Steps to run the node:
+- Edit parameters in the ```stereo_depth_estimation/main.launch``` as mentioned above
+- Source the environment
+- Run ```roslaunch stereo_depth_estimation main.launch```
+
 
 ## ROS topics
 
-A stereo_depth_estimation node subscribes on two topics to receive desired pair of stereo images:
+The node subscribes on two input topics for left and right image and publishes the result depth image on the output topic.
 
-- stereo_depth_estimation/img/left
-- stereo_depth_estimation/img/right
+As mentioned previously, the three topics are configurable, however the default values are as follows:
 
-Once images are published in those topics (within time margin of 10ms between left and right channel) the stereo_depth_estimation runs the depth estimation.
+- ```/stereo_depth_estimation/input/left```
+- ```/stereo_depth_estimation/input/right```
+- ```/stereo_depth_estimation/output```
 
 ## Structure
 
