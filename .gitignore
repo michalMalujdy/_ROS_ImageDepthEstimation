@@ -3,3 +3,4 @@ stereo_depth_estimation/src/summary/
 stereo_depth_estimation/src/data/dataset/
 *.zip
 *.pyc
+.vscode/
