@@ -3,6 +3,6 @@
     <node name="stereo_depth_estimation" pkg="stereo_depth_estimation" type="main.py" output="screen">
         <param name="input_img_left" type="string" value="/stereo_depth_estimation/input/left" />
         <param name="input_img_right" type="string" value="/stereo_depth_estimation/input/right" />
-        <param name="img_out_topic" type="string" value="/stereo_depth_estimation/img_out" />
+        <param name="img_out" type="string" value="/stereo_depth_estimation/img_out" />
     </node>
 </launch>

@@ -32,7 +32,7 @@ class StereoDepthEstimationNode:
         self.img_topic_left_name = '/stereo_depth_estimation/input_img_left'
         self.img_topic_right_name = '/stereo_depth_estimation/input_img_right'
 
-        self.img_out_topic_name = 'img_out'
+        self.img_out_topic_name = '/stereo_depth_estimation/img_out'
         self.default_img_out_topic = '/stereo_depth_estimation/output'
 
         self.left_img_present = False
