@@ -57,3 +57,9 @@ In the ```src/scripts/main.py``` file lies ROS node wrapper for the network. Sub
 Directories ```img/left``` and ```img/right``` holds the test images that are going to be published once the node is started. They can be swaped for a different ones but names need to be either preserved or updated in the ```src/main.py``` file.
 
 The file ```src/main.py``` holds the whole source code of the package.
+
+# Calibration
+In order the network to perform well, stereo cameras need to be calibrated. In the project for calibration purpouses the [kalibr](https://github.com/ethz-asl/kalibr/wiki/installation) package was used. The installation and usage process of the kalibr package in the project was done as follows at the [wiki page](https://github.com/ethz-asl/kalibr/wiki/installation). As result the calibration file is output from the kalibr package used in the further process of the input images processing (rectifying).
+
+# Input image processing
+The network was trained on rectified images and in order to perform well it needs rectified input images. In order to do so, in the project [stereo_image_proc](http://wiki.ros.org/stereo_image_proc) was used. In the initialization it needs calibration data acquired from the previous section (using kalibr). The quickstart, usage and output topics are described in the [wiki](http://wiki.ros.org/stereo_image_proc).
